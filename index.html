@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#12131f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QuizKumpel">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>QuizKumpel</title>
+<style>
+:root{--bg:#12131f;--card:#1e2036;--card2:#272a47;--tx:#f2f3fa;--mu:#9a9fc4;--gold:#ffc233;--red:#e5484d;--ok:#2fbf71;--bd:#34385c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px}
+body{display:flex;flex-direction:column;overflow:hidden}
+header{padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bd);background:linear-gradient(180deg,#1b1d33,#12131f)}
+header h1{margin:0;font-size:21px;flex:1;letter-spacing:.3px}
+header h1 span{color:var(--gold)}
+header button{border:0;border-radius:12px;background:var(--card2);color:var(--tx);padding:9px 13px;font-size:16px;font-weight:600}
+main{flex:1;overflow-y:auto;padding:14px 14px calc(env(safe-area-inset-bottom) + 28px);max-width:560px;width:100%;margin:0 auto}
+h2{font-size:18px;margin:20px 0 10px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px}
+.rank{display:flex;align-items:center;gap:14px}
+.rank .re{font-size:44px}
+.rank .rt{flex:1}
+.rank small{display:block;color:var(--mu);margin:2px 0 8px;font-size:14px}
+.bar{height:8px;background:#0c0d18;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ff8a33);border-radius:6px;transition:width .3s}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px 10px;color:var(--tx);text-align:center;font-size:16px}
+.tile .te{display:block;font-size:34px;margin-bottom:4px}
+.tile b{display:block}
+.tile small{display:block;color:var(--mu);font-size:13px;margin-top:3px}
+.tile.mix{grid-column:1 / -1;background:linear-gradient(135deg,#3a2a6b,#6b2a4a)}
+.game{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:13px 14px;margin-bottom:10px;color:var(--tx);font-size:17px}
+.game .ge{font-size:32px}
+.game .gt{flex:1}
+.game .gt b{display:block}
+.game .gt small{display:block;color:var(--mu);font-size:13.5px;margin-top:2px}
+.game .gb{font-size:12.5px;color:var(--gold);text-align:right;max-width:90px}
+.top{display:flex;justify-content:space-between;font-size:15px;color:var(--mu);margin-bottom:8px}
+.qbox{font-size:21px;font-weight:700;line-height:1.3;margin:18px 0 16px;min-height:84px}
+.opt{display:block;width:100%;text-align:left;border:2px solid var(--bd);background:var(--card);color:var(--tx);border-radius:16px;padding:15px;margin-bottom:10px;font-size:17.5px;font-weight:500}
+.opt:active{transform:scale(.99)}
+.opt.ok{border-color:var(--ok);background:#143d2a}
+.opt.bad{border-color:var(--red);background:#40181c}
+.opt.dim{opacity:.55}
+.expl{background:var(--card2);border-radius:14px;padding:13px;margin:6px 0 12px;font-size:16px;line-height:1.4}
+.btn{display:block;width:100%;border:0;border-radius:16px;padding:16px;font-size:18px;font-weight:700;background:linear-gradient(90deg,var(--gold),#ff8a33);color:#1a1200;margin:10px 0}
+.btn.sec{background:var(--card2);color:var(--tx)}
+.btn.red{background:#40181c;color:#ff9ea1}
+.res{text-align:center;padding:26px 10px}
+.res .big{font-size:64px}
+.res h3{font-size:26px;margin:8px 0}
+.res p{color:var(--mu);margin:4px 0;font-size:16.5px}
+.res .pts{font-size:34px;font-weight:800;color:var(--gold);margin:12px 0}
+.tfq{font-size:22px;font-weight:700;line-height:1.3;margin:12px 0 8px;min-height:70px}
+.tfa{background:var(--card2);border-radius:16px;padding:16px;font-size:21px;font-weight:800;text-align:center;color:var(--gold);margin-bottom:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two button{border:0;border-radius:16px;padding:20px 8px;font-size:19px;font-weight:800;color:#fff}
+.yes{background:var(--ok)}.no{background:var(--red)}
+.timer{font-size:30px;font-weight:800;text-align:center;color:var(--gold)}
+.last{min-height:24px;text-align:center;font-size:15.5px;margin-top:12px}
+.hint{background:var(--card);border:1px solid var(--bd);border-left:4px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:8px;font-size:17px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cols>div{min-width:0}
+.cols button{display:block;width:100%;border:2px solid var(--bd);background:var(--card);color:var(--tx);border-radius:14px;padding:14px 6px;margin-bottom:10px;font-size:15.5px;font-weight:600;min-height:62px}
+.cols button.sel{border-color:var(--gold);background:#3b3115}
+.cols button.done{border-color:var(--ok);background:#143d2a;opacity:.75}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.mem button{aspect-ratio:1;border:0;border-radius:16px;background:var(--card2);font-size:34px;color:var(--tx)}
+.mem button.f{background:#3a2a6b}
+.mem button.m{background:#143d2a}
+.back{background:none;border:0;color:var(--gold);font-size:17px;font-weight:700;padding:6px 0 10px}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:20}
+.sheet.open{display:flex}
+.sheet .box{background:var(--card);width:100%;max-height:88%;border-radius:22px 22px 0 0;overflow-y:auto;padding:18px 18px calc(env(safe-area-inset-bottom) + 22px)}
+.sheet h3{margin:0 0 10px;font-size:21px}
+.sheet p{color:var(--mu);font-size:15.5px;line-height:1.45}
+.gin{width:100%;box-sizing:border-box;background:var(--card);border:2px solid var(--bd);border-radius:14px;color:var(--tx);font-size:17px;padding:13px 14px;outline:none}
+.gin:focus{border-color:var(--gold)}
+#sug{margin:6px 0 4px}
+.sg{display:block;width:100%;text-align:left;background:var(--card2);border:0;border-radius:10px;color:var(--tx);font-size:16px;padding:11px 12px;margin-bottom:5px}
+.legend{font-size:13px;color:var(--mu);line-height:1.4;margin:8px 0}
+.gh,.gr{display:grid;grid-template-columns:1.5fr 1fr 1.2fr 1fr 1fr .8fr;gap:4px;margin-bottom:4px}
+.gh span{font-size:10px;color:var(--mu);text-align:center;line-height:1.1;overflow:hidden}
+.gn{font-size:11.5px;font-weight:700;display:flex;align-items:center;line-height:1.1;overflow-wrap:anywhere}
+.gc{border-radius:8px;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;text-align:center;color:#fff;padding:2px;line-height:1.1;overflow-wrap:anywhere;min-width:0}
+.gc i{font-style:normal;font-size:12px}
+.gc.g{background:var(--ok)}.gc.y{background:#c8981c}.gc.r{background:#a8343a}
+.wg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:300px;margin:12px auto}
+.wt{aspect-ratio:1;border:2px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff}
+.wt.f{border-color:var(--mu)}
+.wt.g{background:var(--ok);border-color:var(--ok)}.wt.y{background:#c8981c;border-color:#c8981c}.wt.x{background:#33364d;border-color:#33364d}
+.kb{margin-top:8px}
+.kr{display:flex;justify-content:center;gap:5px;margin-bottom:6px}
+.k{flex:1;max-width:36px;height:46px;border:0;border-radius:8px;background:var(--card2);color:var(--tx);font-size:16px;font-weight:700;padding:0}
+.k.wide{max-width:52px;flex:1.4;font-size:14px}
+.k.g{background:var(--ok)}.k.y{background:#c8981c}.k.x{background:#1b1d2e;color:var(--mu)}
+.toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#000;color:#fff;border:1px solid var(--gold);padding:11px 18px;border-radius:22px;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header><button id="btnBack" data-a="home" style="display:none">‹ Menü</button><h1>Quiz<span>Kumpel</span></h1><button data-a="info" aria-label="Info">ℹ️</button></header>
+<main id="main"></main>
+<div class="sheet" id="shInfo"><div class="box">
+ <h3>Über QuizKumpel</h3>
+ <p>Quiz und kleine Spiele zu Wrestling, Serien, Filmen und Österreich. Sammle XP und steige vom Newcomer zur Legende auf.</p>
+ <p>Jeden Tag gibt es ein neues Wrestler-Rätsel und ein Wrestling-Wordle. Halte deine 🔥 Serie am Leben! Die Daten der Wrestler (Jahrgang, Größe) sind gerundet und können leicht abweichen.</p>
+ <p>Kostenlos, ohne Anmeldung, ohne Werbung. Dein Fortschritt bleibt nur auf deinem Gerät.</p>
+ <p>Dies ist ein inoffizielles Fan-Quiz. Es steht in keiner Verbindung zu WWE, Netflix oder anderen genannten Marken. Alle Namen gehören ihren Inhabern. Die Fragen wurden nach bestem Wissen erstellt.</p>
+ <button class="btn sec" data-a="close">Schließen</button>
+ <button class="btn red" data-a="reset">Fortschritt zurücksetzen</button>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== Daten ===== */
+const CATS={wwe:{n:"WWE & Wrestling",e:"🤼"},serien:{n:"Serien",e:"📺"},filme:{n:"Filme",e:"🎬"},oe:{n:"Österreich",e:"🇦🇹"}};
+const RAW={
+wwe:[
+["In welchem Jahr fand die erste WrestleMania statt?","1985","1979","1989","1993","WrestleMania I war am 31. März 1985 im Madison Square Garden in New York."],
+["Wer gewann das allererste Royal-Rumble-Match im Jahr 1988?","Jim Duggan","Hulk Hogan","Ric Flair","Randy Savage","„Hacksaw“ Jim Duggan gewann das erste Rumble."],
+["Gegen wen verlor The Undertaker 2014 seine WrestleMania-Serie von 21 Siegen?","Brock Lesnar","Triple H","John Cena","Shawn Michaels","Bei WrestleMania XXX endete die berühmte „Streak“."],
+["Wie heißt der berühmte Finisher von Stone Cold Steve Austin?","Stone Cold Stunner","Rock Bottom","Pedigree","Tombstone","Der Stunner ist sein Markenzeichen."],
+["Wie heißt The Rock mit bürgerlichem Namen?","Dwayne Johnson","Dwight Hunter","Duane Rogers","Dean Mitchell","The Rock ist heute auch ein Hollywood-Star."],
+["Wie heißt Triple H mit bürgerlichem Namen?","Paul Levesque","Peter Lawson","Patrick Lee","Paul Wight","Er ist mit Stephanie McMahon verheiratet."],
+["Wie heißt John Cenas Finisher?","Attitude Adjustment","RKO","Spear","Pedigree","Früher hieß der Griff „FU“."],
+["Mit welchem Finisher besiegt Brock Lesnar die meisten Gegner?","F-5","RKO","619","Sweet Chin Music","Lesnar wird „The Beast“ genannt."],
+["Welcher Wrestler hat den RKO als Finisher?","Randy Orton","Roman Reigns","Rey Mysterio","Ricochet","„The Viper“ schlägt oft aus dem Nichts zu."],
+["Wie heißt der Finisher von Rey Mysterio?","619","DDT","Spear","Pedigree","Dabei nutzt er die Ringseile."],
+["Wer wird „The Heartbreak Kid“ genannt?","Shawn Michaels","Bret Hart","Edge","Jeff Hardy","Sein Finisher ist die Sweet Chin Music."],
+["Welcher Wrestler ist „The Hitman“?","Bret Hart","Triple H","Kevin Nash","Mick Foley","Seine Spezialität ist der Sharpshooter."],
+["Wofür steht das T in „TLC“-Match?","Tables (Tische)","Titles","Towers","Time","TLC bedeutet Tables, Ladders and Chairs."],
+["Was bekommt der Sieger beim Money-in-the-Bank-Match?","Einen Koffer mit Titelmatch-Vertrag","Eine Million Euro","Einen Platz in der Hall of Fame","Einen Gratis-Urlaub","Er kann den Titelkampf zu einem Zeitpunkt seiner Wahl einlösen."],
+["Wie viele Teilnehmer hat das klassische Royal-Rumble-Match?","30","20","40","50","Nach und nach steigen alle in den Ring."],
+["Was umgibt den Ring bei einem „Hell in a Cell“-Match?","Ein Stahlkäfig mit Dach","Ein Wassergraben","Ein Feuerring","Ein Glasdach","Der Käfig umschließt auch den Bereich um den Ring."],
+["In welchem Monat findet traditionell „Survivor Series“ statt?","November","Februar","Mai","August","Die Show gibt es seit 1987."],
+["Warum wurde 2002 aus WWF der Name WWE?","Wegen eines Streits mit dem Umweltverband WWF","Wegen eines Besitzerwechsels","Weil es moderner klang","Wegen eines Verkaufs an WCW","Der Naturschutz-WWF hatte geklagt."],
+["Welche Konkurrenz-Liga kaufte WWE im Jahr 2001?","WCW","TNA","AEW","NJPW","Damit endeten die „Monday Night Wars“."],
+["An welchem Wochentag läuft „Raw“ traditionell?","Montag","Mittwoch","Freitag","Sonntag","Der Name der Show: „Monday Night Raw“."],
+["Wie heißt WWEs Nachwuchsmarke?","NXT","XFL","UFC","NWE","Dort starten viele spätere Stars."],
+["Wer war 1993 der erste Wrestler in der WWE Hall of Fame?","André the Giant","Hulk Hogan","Bruno Sammartino","The Rock","Er wurde „das achte Weltwunder“ genannt."],
+["Wie nennt man die wilde WWE-Zeit Ende der 1990er-Jahre?","Attitude Era","Golden Era","Smile Era","Power Era","Mit Stars wie Austin, The Rock und DX."],
+["Welcher Wrestler trat auch als Mankind, Cactus Jack und Dude Love auf?","Mick Foley","Kane","Big Show","Mark Henry","Seine Handpuppe heißt Mr. Socko."],
+["Was gewann Kurt Angle 1996 bei Olympia?","Gold im Ringen","Silber im Judo","Bronze im Boxen","Gold im Schwimmen","Er trat dabei mit einer Nackenverletzung an."],
+["Welche Gruppe gründeten Triple H und Shawn Michaels?","D-Generation X","The Shield","Evolution","Nation of Domination","Die Gruppe wurde in den 90ern berühmt."],
+["Wer bildete die Gruppe „The Shield“?","Seth Rollins, Roman Reigns, Dean Ambrose","Edge, Christian, Rhyno","John Cena, Randy Orton, Batista","Jey Uso, Jimmy Uso, Big E","Sie debütierten 2012 bei Survivor Series."],
+["Welcher Ruf gehört zu Daniel Bryan?","„Yes! Yes! Yes!“","„Woooo!“","„Oh yeah!“","„Hell yeah!“","Die Fans rufen ihn bei seinem Einmarsch mit."],
+["Welchen Ruf kennt man von Ric Flair?","„Woooo!“","„Oh yeah!“","„Yes!“","„Booyaka!“","Der „Nature Boy“ ist eine Legende."],
+["Wer ist als „Macho Man“ bekannt und rief „Oh yeah!“?","Randy Savage","Hulk Hogan","Ted DiBiase","Jake Roberts","Er trug gern Sonnenbrille und Hut."],
+["Wen slammte Hulk Hogan bei WrestleMania III?","André the Giant","Bret Hart","Earthquake","Sgt. Slaughter","Das war 1987 vor riesigem Publikum."],
+["Wie lautete Eddie Guerreros Motto?","Lie, Cheat, Steal","Hustle, Loyalty, Respect","Never Give Up","Believe That","Sein Finisher war der Frog Splash."],
+["Welche Geste ist das Markenzeichen von John Cena?","Hand vor dem Gesicht wedeln","Daumen nach unten","Kehle durchschneiden","Gewichtheber-Pose","Dazu der Spruch „You can’t see me“."],
+["Was gehört zum Einmarsch des Undertaker?","Glockenschläge und Dunkelheit","Feuerwerk und Gitarre","Ein Zirkuszelt","Ein Hubschrauber","Der „Deadman“ liebt es düster."],
+["Wie heißt Roman Reigns’ Gruppe mit den Usos?","The Bloodline","The Shield","The Nation","The Family","Sie gehören zur Samoaner-Familie Anoa’i."],
+["Wer ist der Vater von Cody Rhodes?","Dusty Rhodes","Ric Flair","Terry Funk","Dwayne Johnson","Dusty hieß „The American Dream“."],
+["Wer ist der Vater von Charlotte Flair?","Ric Flair","Dusty Rhodes","Hulk Hogan","Triple H","Auch ihre Familie ist Wrestling-Adel."],
+["Wofür ist Bianca Belair berühmt?","Ihr extra langer Zopf","Eine Maske","Ein Umhang mit Feuer","Eine Gitarre","Sie nennt sich „The EST of WWE“."],
+["Aus welcher Stadt in den USA kommt Rey Mysterio?","San Diego","Boston","Miami","Chicago","Der Wrestler mit der Maske stammt aus Kalifornien."],
+["Aus welchem Land stammt der Wrestler Gunther („The Ring General“)?","Österreich","Deutschland","Schweiz","Niederlande","Er wurde in Wien geboren."],
+["Welcher Spitzname gehört zu CM Punk?","Best in the World","The Phenom","The Viper","The Architect","Er lebt „straight edge“, also ohne Alkohol und Drogen."],
+["Welche Form hat ein Wrestling-Ring?","Quadratisch","Rund","Dreieckig","Sechseckig","Trotzdem sagt man „Squared Circle“."],
+["Wie lange muss ein Gegner beim Pinfall auf den Schultern liegen?","Drei Sekunden","Eine Sekunde","Fünf Sekunden","Zehn Sekunden","Der Ringrichter zählt bis drei."],
+["Wie lange darf ein Wrestler außerhalb des Rings sein, bevor er ausgezählt wird?","Zehn Sekunden","Drei Sekunden","Dreißig Sekunden","Eine Minute","Das heißt „Count-out“."],
+["Was ist ein „Heel“ im Wrestling?","Ein Bösewicht","Ein Held","Ein Ringrichter","Ein Kommentator","Der Held heißt „Face“ oder „Babyface“."],
+["Was bedeutet „Kayfabe“?","So tun, als wäre alles echt","Ein Griff","Ein Titelgürtel","Ein Ringrichter-Zeichen","Die Show wird als Realität gespielt."],
+["Wie viele Wrestler starten beim klassischen Elimination-Chamber-Match?","Sechs","Vier","Acht","Zehn","Zwei beginnen, die anderen warten in Kapseln."],
+["Wie gewinnt man ein „Iron Man“-Match?","Mit den meisten Siegen in der Zeit","Wer zuerst aufgibt","Wer eine Leiter erklimmt","Wer den Gegner aus dem Ring wirft","Meist läuft es 30 oder 60 Minuten."],
+["Wo fand 1997 der „Montreal Screwjob“ statt?","Montreal","Toronto","New York","Chicago","Bret Hart verlor dort bei Survivor Series."],
+["In welchem Jahr startete „Monday Night Raw“?","1993","1985","1999","2002","Seitdem läuft die Show jede Woche."],
+["Aus welchem Land kommt Rhea Ripley?","Australien","Irland","Kanada","Neuseeland","Sie stammt aus Adelaide."],
+["Aus welchem Land kommt Becky Lynch („The Man“)?","Irland","England","Schottland","USA","Sie stammt aus Dublin."],
+["Wie heißen die Usos mit Vornamen?","Jimmy und Jey","Matt und Jeff","Nick und Matt","Bubba Ray und D-Von","Die Zwillinge sind ein berühmtes Tag Team."],
+["Welche Brüder bilden die „Hardy Boyz“?","Matt und Jeff","Jimmy und Jey","Nick und Matt","Bubba Ray und D-Von","Sie sind für TLC-Matches berühmt."],
+["Wer war in der Story der Bruder des Undertaker?","Kane","Big Show","Mankind","Triple H","Gemeinsam waren sie die „Brothers of Destruction“."],
+["Welcher Spitzname gehört zu Big Show?","The World’s Largest Athlete","The Phenom","The Beast","The Viper","Er ist über zwei Meter groß."],
+["Wer gewann bei WrestleMania 40 den Undisputed-WWE-Titel von Roman Reigns?","Cody Rhodes","Seth Rollins","John Cena","Randy Orton","Das war im April 2024 in Philadelphia."],
+["Was ist ein „Finisher“?","Der Abschluss-Move eines Wrestlers","Ein Kommentator","Ein Zuschauerblock","Ein Ringrichter","Mit ihm will man den Kampf beenden."],
+["Aus welchem Land kommt der Wrestler Drew McIntyre?","Schottland","Irland","Kanada","England","Er wird „The Scottish Warrior“ genannt."]
+],
+serien:[
+["Welchen Beruf hat Walter White am Anfang von „Breaking Bad“?","Chemielehrer","Arzt","Polizist","Busfahrer","Später nennt er sich „Heisenberg“."],
+["In welcher US-Stadt spielt „Breaking Bad“ hauptsächlich?","Albuquerque","Las Vegas","Miami","Phoenix","Die Stadt liegt in New Mexico."],
+["Wie heißt die Kleinstadt in „Stranger Things“?","Hawkins","Sunnydale","Riverdale","Springfield","Sie liegt im US-Bundesstaat Indiana."],
+["Wie heißt das Mädchen mit Superkräften in „Stranger Things“?","Eleven","Nine","Twelve","Seven","Sie kann Dinge mit Gedanken bewegen."],
+["Wie lautet der Wahlspruch des Hauses Stark in „Game of Thrones“?","Der Winter naht","Feuer und Blut","Hör mich brüllen","Unser ist die Wut","Im Original heißt es „Winter is coming“."],
+["Woraus besteht der Eiserne Thron?","Aus Schwertern","Aus Gold","Aus Holz","Aus Eis","Die Schwerter besiegter Feinde wurden geschmolzen."],
+["Wie heißt das Café in „Friends“?","Central Perk","Moe’s","Cheers","Luke’s Diner","Dort sitzen die Freunde auf dem Sofa."],
+["Wie viele Freunde stehen in „Friends“ im Mittelpunkt?","Sechs","Vier","Fünf","Acht","Rachel, Monica, Phoebe, Ross, Chandler und Joey."],
+["Wo arbeitet Homer Simpson?","Im Kernkraftwerk","In einer Schule","Bei der Polizei","In einer Bank","Er ist dort Sicherheitsinspektor."],
+["Welches Spiel wird in der ersten Runde von „Squid Game“ gespielt?","Rotes Licht – Grünes Licht","Fangen","Verstecken","Seilziehen","Wer sich bewegt, scheidet aus."],
+["Welche Maske tragen die Räuber in „Haus des Geldes“?","Salvador Dalí","Charlie Chaplin","Guy Fawkes","Albert Einstein","Dazu tragen sie rote Overalls."],
+["Wonach sind die Decknamen in „Haus des Geldes“ benannt?","Nach Städten","Nach Tieren","Nach Farben","Nach Göttern","Zum Beispiel Tokio, Berlin und Nairobi."],
+["Wie heißt die Schule von Wednesday Addams in der Serie „Wednesday“?","Nevermore Academy","Hogwarts","Riverdale High","Xavier Institute","Die Schule ist für Außenseiter."],
+["Wie heißt die Kleinstadt in der deutschen Serie „Dark“?","Winden","Hawkins","Bergheim","Sonnental","Dort geht es um Zeitreisen."],
+["Wie heißt die Papierfirma in „The Office“ (US)?","Dunder Mifflin","Sabre","Vance Refrigeration","Initech","Sie sitzt in Scranton."],
+["Welches Wort ruft Sheldon in „The Big Bang Theory“ gern?","Bazinga","Booyah","Cowabunga","Eureka","Er sagt es nach einem Scherz."],
+["In welcher englischen Stadt spielt „Peaky Blinders“?","Birmingham","London","Liverpool","Manchester","Die Familie heißt Shelby."],
+["Wie heißt der Hexer in „The Witcher“?","Geralt von Riva","Aragorn","Jon Snow","Legolas","Er hat weiße Haare."],
+["Wie heißt „Baby Yoda“ in „The Mandalorian“?","Grogu","Yoda Junior","Mando","Din","Din Djarin ist sein Beschützer."],
+["Wie heißt der Held in „Avatar – Der Herr der Elemente“?","Aang","Zuko","Sokka","Toph","Er kann alle vier Elemente beherrschen."],
+["Wo wohnt SpongeBob?","In einer Ananas","In einem Schuh","In einer Muschel","In einem Fass","Die Ananas liegt in Bikini Bottom."],
+["Wer stirbt in „South Park“ ständig?","Kenny","Cartman","Stan","Kyle","Er trägt eine orange Kapuze."],
+["Wie heißt der Wikinger-Held in „Vikings“?","Ragnar Lothbrok","Floki","Bjorn","Ivar","Er will König werden."],
+["Welchen Beruf hat Dexter tagsüber?","Blutspuren-Analyst bei der Polizei","Arzt","Koch","Lehrer","Sein dunkles Geheimnis kennt kaum jemand."],
+["In welcher Straße wohnt Sherlock Holmes?","Baker Street","Downing Street","Abbey Road","Oxford Street","Hausnummer 221B."],
+["Über welche Königin handelt „The Crown“ vor allem?","Elizabeth II.","Victoria","Maria Theresia","Elisabeth I.","Die Serie läuft auf Netflix."],
+["Was hat Michael Scofield in „Prison Break“ auf der Haut?","Einen Fluchtplan als Tattoo","Eine Landkarte von Mexiko","Seinen Namen","Ein Herz","Er will seinen Bruder befreien."],
+["Was passiert zu Beginn von „Lost“?","Ein Flugzeug stürzt auf eine Insel","Ein Schiff sinkt","Ein Bus verunglückt","Ein Zug entgleist","Die Überlebenden sind gestrandet."],
+["Was sind die „Walker“ in „The Walking Dead“?","Zombies","Vampire","Aliens","Roboter","Hauptfigur ist Rick Grimes."],
+["Wie heißt der Anführer von „The Seven“ in „The Boys“?","Homelander","Superman","Black Noir","Starlight","Er wirkt nett, ist aber gefährlich."],
+["Wer ist der berühmte Drogenboss in der Serie „Narcos“ (Staffel 1)?","Pablo Escobar","El Chapo","Tony Montana","Walter White","Die Serie spielt in Kolumbien."],
+["Wie heißt die Stadt in „Family Guy“?","Quahog","Springfield","South Park","Bedrock","Stewie ist ein sprechendes Baby."],
+["Welche Spielernummer hat die Hauptfigur Gi-hun in „Squid Game“?","456","001","218","067","Er ist ein verschuldeter Familienvater."],
+["Wie heißt Joeys Anmachspruch in „Friends“?","How you doin’?","Bazinga","Yada yada","Legen… wait for it… dary","Dazu hebt er die Augenbrauen."],
+["Wie heißt der Erzähler in „How I Met Your Mother“?","Ted Mosby","Barney Stinson","Marshall Eriksen","Sheldon Cooper","Er erzählt seinen Kindern die Geschichte."],
+["An welchem Wochentag läuft der „Tatort“ traditionell im TV?","Sonntag","Montag","Mittwoch","Freitag","Der Tatort läuft seit 1970."],
+["Welches Tier ist „Kommissar Rex“?","Deutscher Schäferhund","Dackel","Labrador","Pudel","Die Serie spielt in Wien."],
+["Wie wird Daenerys in „Game of Thrones“ auch genannt?","Mutter der Drachen","Königin des Nordens","Löwin","Wolfsmädchen","Sie hat drei Drachen."],
+["Wie nennt sich Walter White als Drogenkoch?","Heisenberg","Einstein","Newton","Tesla","Der Name erinnert an den Physiker Werner Heisenberg."]
+],
+filme:[
+["In welchem Jahr sank die Titanic?","1912","1895","1925","1939","Der Film von 1997 stammt von James Cameron."],
+["Wer führte bei „Titanic“ (1997) Regie?","James Cameron","Steven Spielberg","Christopher Nolan","Ridley Scott","Cameron drehte auch „Avatar“."],
+["Wie heißt Simbas Vater in „Der König der Löwen“?","Mufasa","Scar","Rafiki","Timon","Sein Onkel heißt Scar."],
+["Wie heißt die Zauberschule in „Harry Potter“?","Hogwarts","Beauxbatons","Durmstrang","Ilvermorny","Sie liegt in Schottland."],
+["Was verrät Darth Vader seinem Gegner Luke Skywalker?","Dass er sein Vater ist","Dass er sein Bruder ist","Dass er ein Roboter ist","Dass er Yoda kennt","Das passiert in „Das Imperium schlägt zurück“."],
+["Welcher Film war 1995 der erste komplett am Computer animierte Spielfilm?","Toy Story","Shrek","Findet Nemo","Cars","Er stammt vom Studio Pixar."],
+["Wer ist Shreks bester Freund?","Ein Esel","Ein Drache","Ein Pferd","Ein Kater","Der Esel redet ununterbrochen."],
+["Wie heißt der Schneemann in „Die Eiskönigin“?","Olaf","Sven","Kristoff","Hans","Er träumt vom Sommer."],
+["Welche Pille nimmt Neo in „Matrix“, um die Wahrheit zu sehen?","Die rote","Die blaue","Die grüne","Die gelbe","Er erkennt die Welt als Simulation."],
+["Wer führte bei „Inception“ Regie?","Christopher Nolan","Quentin Tarantino","Martin Scorsese","Denis Villeneuve","Der Film spielt in Träumen."],
+["Welcher Fisch ist in „Findet Nemo“ furchtbar vergesslich?","Dory","Marlin","Bruce","Gill","Sie ist ein blauer Fisch."],
+["Wie heißt der Bösewicht in „Avengers: Infinity War“?","Thanos","Loki","Ultron","Hela","Er sammelt die Infinity-Steine."],
+["Wie heißt Spider-Man mit bürgerlichem Namen?","Peter Parker","Bruce Wayne","Tony Stark","Clark Kent","Sein Onkel Ben gibt ihm einen weisen Rat."],
+["Wie heißt der Hobbit, der den Ring nach Mordor bringt?","Frodo","Bilbo","Gimli","Gandalf","Er bekommt den Ring von Bilbo."],
+["Womit vergleicht Forrest Gump das Leben?","Mit einer Schachtel Pralinen","Mit einem Fluss","Mit einer Achterbahn","Mit einem Spiel","Man weiß nie, was man bekommt."],
+["Wer spielt Rocky Balboa?","Sylvester Stallone","Arnold Schwarzenegger","Dwayne Johnson","Bruce Willis","Rocky trainiert in Philadelphia."],
+["Wer spielt Maximus in „Gladiator“?","Russell Crowe","Brad Pitt","Tom Cruise","Hugh Jackman","Der Film spielt im alten Rom."],
+["Mit wie vielen Meilen pro Stunde muss das Auto in „Zurück in die Zukunft“ fahren?","88","55","100","120","Das Auto ist ein DeLorean."],
+["Wie heißt der Junge in „Kevin – Allein zu Haus“?","Kevin McCallister","Kevin Walker","Harry Lime","Max Miller","Er verteidigt das Haus gegen Einbrecher."],
+["Wie kommen die Dinosaurier in „Jurassic Park“ zurück?","Aus DNA in einer Mücke im Bernstein","Aus Eiern im Eis","Aus Knochen","Durch Zeitreisen","Das erklärt der Film in einem kurzen Lehrfilm."],
+["Aus welchem Land stammt Arnold Schwarzenegger („Terminator“)?","Österreich","Deutschland","Schweiz","USA","Er wurde in Thal bei Graz geboren."],
+["Wer spielt Pete „Maverick“ Mitchell in „Top Gun“?","Tom Cruise","Brad Pitt","Matt Damon","Keanu Reeves","Er ist Kampfpilot."],
+["Wer führte bei „Der weiße Hai“ (1975) Regie?","Steven Spielberg","George Lucas","James Cameron","Tim Burton","Der Film machte den Strand zum Albtraum."],
+["Wen ruft man, wenn Geister spuken (laut Filmtitel)?","Ghostbusters","Avengers","X-Men","Men in Black","Der Song dazu ist weltberühmt."],
+["Wer spielt Barbie im Film von 2023?","Margot Robbie","Emma Stone","Zendaya","Anne Hathaway","Regie führte Greta Gerwig."],
+["Wovon handelt der Film „Oppenheimer“ (2023)?","Von der Atombombe","Vom Mond","Von einem U-Boot","Von einem Wikinger","Cillian Murphy spielt die Hauptrolle."],
+["Welche Farbe haben die Minions?","Gelb","Blau","Grün","Rot","Sie dienen dem Bösewicht Gru."],
+["Welcher Bär ist Mowglis Freund im „Dschungelbuch“?","Balu","Paddington","Yogi","Bruno","Er singt „Probier’s mal mit Gemütlichkeit“."],
+["Welche WWE-Wrestlerin steht im Film „Fighting with My Family“ im Mittelpunkt?","Paige","Charlotte Flair","Becky Lynch","Nikki Bella","Dwayne Johnson hat darin einen Auftritt."],
+["Welche Figur spielt Dwayne Johnson in „Fast & Furious“?","Luke Hobbs","Dominic Toretto","Brian O’Connor","Roman Pearce","Hobbs ist ein Regierungsagent."]
+],
+oe:[
+["Wie heißt die Hauptstadt von Österreich?","Wien","Salzburg","Graz","Linz","Wien ist auch ein eigenes Bundesland."],
+["Wie heißt der höchste Berg Österreichs?","Großglockner","Zugspitze","Matterhorn","Watzmann","Er ist 3.798 Meter hoch."],
+["Wie viele Bundesländer hat Österreich?","Neun","Sieben","Acht","Zehn","Von Burgenland bis Wien."],
+["Welcher große Fluss fließt durch Wien?","Donau","Rhein","Elbe","Inn","Er mündet ins Schwarze Meer."],
+["In welcher Stadt wurde Mozart geboren?","Salzburg","Wien","Innsbruck","Linz","Sein Geburtshaus ist ein Museum."],
+["Wie hieß Österreichs Währung vor dem Euro?","Schilling","Mark","Franken","Gulden","Der Euro kam 2002 als Bargeld."],
+["Welche Farben hat die österreichische Flagge?","Rot-Weiß-Rot","Schwarz-Rot-Gold","Rot-Weiß","Rot-Grün-Weiß","Es sind drei waagrechte Streifen."],
+["Aus welchem Fleisch wird ein echtes Wiener Schnitzel gemacht?","Kalb","Schwein","Huhn","Rind","Das Fleisch wird paniert."],
+["Wie heißt die berühmte Schokoladentorte aus Wien?","Sachertorte","Linzer Torte","Esterházy-Torte","Dobos-Torte","Sie wird mit Marillenmarmelade gefüllt."],
+["Welche Stadt ist die zweitgrößte Österreichs?","Graz","Linz","Salzburg","Innsbruck","Sie liegt in der Steiermark."],
+["An wie viele Länder grenzt Österreich?","Acht","Sechs","Sieben","Neun","Zum Beispiel Deutschland, Italien und Ungarn."],
+["In welchem Bundesland liegt der Neusiedler See?","Burgenland","Kärnten","Tirol","Vorarlberg","Er ist der größte Steppensee Mitteleuropas."],
+["In welcher Stadt steht Schloss Schönbrunn?","Wien","Salzburg","Graz","Innsbruck","Es war die Sommerresidenz der Habsburger."],
+["Wie wurde Kaiserin Elisabeth genannt?","Sisi","Marie","Trudi","Elli","Sie war die Frau von Kaiser Franz Joseph."],
+["Welcher österreichische Skirennläufer wurde „Herminator“ genannt?","Hermann Maier","Marcel Hirscher","Franz Klammer","Benjamin Raich","Er gewann 1998 Olympiagold trotz eines schweren Sturzes."],
+["Welcher Österreicher wurde dreimal Formel-1-Weltmeister?","Niki Lauda","Jochen Rindt","Gerhard Berger","Max Verstappen","Er überlebte 1976 einen Feuerunfall."],
+["Aus welchem Land stammt das Unternehmen Red Bull?","Österreich","Thailand","USA","Deutschland","Der Firmensitz liegt in Fuschl am See."],
+["Wie heißt die Hauptstadt von Kärnten?","Klagenfurt","Villach","Linz","Bregenz","Dort in der Nähe liegt der Wörthersee."],
+["Welches Bundesland ist flächenmäßig das größte?","Niederösterreich","Steiermark","Tirol","Salzburg","Es umgibt die Hauptstadt Wien."],
+["An welchem Datum ist der österreichische Nationalfeiertag?","26. Oktober","1. Mai","12. November","3. Oktober","Er erinnert an die Neutralität."],
+["Welcher Wintersport gilt in Österreich als Nationalsport?","Skifahren","Eishockey","Curling","Biathlon","Er ist ein echter Volkssport."],
+["Was ist ein Kaiserschmarrn?","Ein zerrissener Pfannkuchen","Eine Suppe","Ein Kartoffelgericht","Ein Brot","Er wird mit Puderzucker serviert."],
+["Was bedeutet „Servus“ in Österreich?","Hallo und Tschüss","Danke","Entschuldigung","Gute Nacht","Das Wort bedeutete ursprünglich „Diener“."],
+["Welches Wahrzeichen steht im Wiener Prater?","Das Riesenrad","Der Eiffelturm","Die Zugspitze","Die Hofburg","Es wurde 1897 gebaut."],
+["In welchem Bundesland liegt Hallstatt?","Oberösterreich","Tirol","Kärnten","Vorarlberg","Der Ort gehört zum UNESCO-Welterbe."],
+["Wer sang „Rock Me Amadeus“?","Falco","Wolfgang Ambros","Andreas Gabalier","Udo Jürgens","Der Hit war 1986 weltweit erfolgreich."],
+["Wer gewann 2014 für Österreich den Eurovision Song Contest?","Conchita Wurst","Falco","Christina Stürmer","Nina Proll","Der Song hieß „Rise Like a Phoenix“."],
+["Welcher österreichische Fußballer spielte bei Bayern München und Real Madrid?","David Alaba","Marko Arnautović","Toni Polster","Marcel Sabitzer","Er spielt in der Abwehr."],
+["Wer war von 1848 bis 1916 Kaiser von Österreich?","Franz Joseph I.","Maria Theresia","Karl I.","Rudolf","Er regierte 68 Jahre lang."],
+["Wie heißt die Hauptstadt von Tirol?","Innsbruck","Salzburg","Bregenz","Lienz","Dort steht das Goldene Dachl."],
+["In welcher Stadt steht eine riesige Seebühne im Bodensee?","Bregenz","Salzburg","Eisenstadt","Villach","Dort finden die Festspiele statt."]
+]};
+const Q={};
+for(const k in RAW)Q[k]=RAW[k].map(a=>({q:a[0],a:a[1],w:[a[2],a[3],a[4]],x:a[5]||""}));
+const WHO=[
+{n:"The Undertaker",h:["Er ist als „The Deadman“ bekannt.","Er blieb bei WrestleMania 21 Mal in Folge ungeschlagen.","Sein Finisher ist der Tombstone Piledriver."]},
+{n:"Stone Cold Steve Austin",h:["Er hat eine Glatze und trägt eine Lederweste.","Sein Markenzeichen: Bier trinken im Ring.","Sein Finisher ist der Stone Cold Stunner."]},
+{n:"The Rock",h:["Er ist heute auch ein Hollywood-Schauspieler.","Er hebt gern eine Augenbraue.","Sein Finisher ist der Rock Bottom."]},
+{n:"John Cena",h:["Er wedelt mit der Hand vor dem Gesicht.","Er trägt gern bunte Baseballcaps.","Sein Finisher ist der Attitude Adjustment."]},
+{n:"Triple H",h:["Er ist mit Stephanie McMahon verheiratet.","Er nennt sich „The Game“.","Sein Finisher ist der Pedigree."]},
+{n:"Brock Lesnar",h:["Er war College-Ringer und UFC-Champion.","Er nennt sich „The Beast“.","Sein Finisher ist der F-5."]},
+{n:"Randy Orton",h:["Er kommt aus einer Wrestling-Familie in dritter Generation.","Er wird „The Viper“ genannt.","Sein Finisher ist der RKO."]},
+{n:"Rey Mysterio",h:["Er trägt bunte Masken.","Er ist klein und trotzdem sehr erfolgreich.","Sein Finisher ist der 619."]},
+{n:"Shawn Michaels",h:["Er ist Gründungsmitglied von D-Generation X.","Er heißt „The Heartbreak Kid“.","Sein Finisher ist die Sweet Chin Music."]},
+{n:"Bret Hart",h:["Er kommt aus Kanada.","Er heißt „The Hitman“.","Sein Finisher ist der Sharpshooter."]},
+{n:"Kurt Angle",h:["Er gewann 1996 olympisches Gold im Ringen.","Seine Fans rufen „It’s true! It’s true!“.","Sein Finisher ist der Ankle Lock."]},
+{n:"Mick Foley",h:["Er trat auch als Cactus Jack und Dude Love auf.","Seine Handpuppe heißt Mr. Socko.","Sein Finisher ist der Mandible Claw."]},
+{n:"Eddie Guerrero",h:["Er stammt aus einer berühmten Wrestling-Familie.","Sein Motto: „Lie, Cheat, Steal“.","Sein Finisher ist der Frog Splash."]},
+{n:"Chris Jericho",h:["Er singt auch in einer Band namens Fozzy.","Er wird „Y2J“ genannt.","Er wurde 2001 der erste Undisputed Champion."]},
+{n:"Edge",h:["Er bildete mit Christian ein berühmtes Tag Team.","Er nennt sich „The Rated-R Superstar“.","Sein Name bedeutet auf Deutsch „Kante“."]},
+{n:"Seth Rollins",h:["Er war Mitglied von The Shield.","Er nennt sich „The Architect“.","Er löste bei WrestleMania 31 seinen Money-in-the-Bank-Koffer ein."]},
+{n:"Roman Reigns",h:["Er gehört zur Samoaner-Familie Anoa’i.","Seine Cousins sind die Usos.","Er nennt sich „Head of the Table“."]},
+{n:"Cody Rhodes",h:["Sein Vater war Dusty Rhodes.","Er gewann bei WrestleMania 40 den Titel.","Sein Finisher ist der Cross Rhodes."]},
+{n:"Daniel Bryan",h:["Er trägt einen langen Bart.","Die Fans rufen „Yes! Yes! Yes!“.","Früher wurde er „American Dragon“ genannt."]},
+{n:"Becky Lynch",h:["Sie kommt aus Dublin in Irland.","Sie nennt sich „The Man“.","Ihr Finisher ist der Dis-arm-her."]},
+{n:"Charlotte Flair",h:["Ihr Vater ist eine Wrestling-Legende.","Sie nennt sich „The Queen“.","Ihr Finisher ist der Figure-Eight."]},
+{n:"Bianca Belair",h:["Sie ist für ihren sehr langen Zopf bekannt.","Sie nennt sich „The EST of WWE“.","Ihr Finisher ist der K.O.D."]},
+{n:"Rhea Ripley",h:["Sie kommt aus Adelaide in Australien.","Sie war Teil von The Judgment Day.","Sie nennt sich „The Eradicator“."]},
+{n:"Gunther",h:["Er kommt aus Wien.","Er nennt sich „The Ring General“.","Er ist für seine harten Chops bekannt."]},
+{n:"Big Show",h:["Er ist über zwei Meter groß.","Er nennt sich „The World’s Largest Athlete“.","Sein Finisher ist der Knockout Punch."]},
+{n:"Kane",h:["Er trug lange eine rote Maske.","In der Story ist er der Bruder des Undertaker.","Sein Finisher ist der Chokeslam."]},
+{n:"CM Punk",h:["Er lebt „straight edge“, also ohne Alkohol und Drogen.","Er hielt 2011 die berühmte „Pipe Bomb“-Rede.","Er nennt sich „Best in the World“."]}
+];
+const FIN=[["The Undertaker","Tombstone Piledriver"],["Stone Cold","Stone Cold Stunner"],["The Rock","Rock Bottom"],["John Cena","Attitude Adjustment"],["Triple H","Pedigree"],["Brock Lesnar","F-5"],["Randy Orton","RKO"],["Rey Mysterio","619"],["Shawn Michaels","Sweet Chin Music"],["Bret Hart","Sharpshooter"],["Hulk Hogan","Leg Drop"],["Kurt Angle","Ankle Lock"],["Mick Foley","Mandible Claw"],["Jeff Hardy","Swanton Bomb"],["Seth Rollins","Curb Stomp"],["Cody Rhodes","Cross Rhodes"],["AJ Styles","Phenomenal Forearm"],["Becky Lynch","Dis-arm-her"],["Bianca Belair","K.O.D."],["Ric Flair","Figure-Four Leglock"],["Eddie Guerrero","Frog Splash"],["Batista","Batista Bomb"],["Booker T","Scissors Kick"],["Sting","Scorpion Death Drop"]];
+const EM=["🏆","🥊","🎤","🔥","🎬","📺","🍿","🎮","⚡","👑","💥","🦅"];
+const RANKS=[[0,"Newcomer","🥉"],[150,"Aufsteiger","🥈"],[400,"Midcarder","🥇"],[800,"Main Eventer","🔥"],[1500,"Champion","🏆"],[3000,"Legende","👑"]];
+
+/* ===== Speicher ===== */
+const KEY="qk_v1";
+function fresh(){return {xp:0,best:{},daily:{},streak:{}}}
+let S=fresh();
+try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(o&&typeof o==="object"){S.xp=+o.xp||0;S.best=(o.best&&typeof o.best==="object")?o.best:{};S.daily=(o.daily&&typeof o.daily==="object")?o.daily:{};S.streak=(o.streak&&typeof o.streak==="object")?o.streak:{}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ===== Helfer ===== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),2200)}
+function rankOf(xp){let i=0;for(let k=0;k<RANKS.length;k++)if(xp>=RANKS[k][0])i=k;return {r:RANKS[i],n:RANKS[i+1]||null}}
+function addXp(n){const before=rankOf(S.xp).r[1];S.xp+=Math.max(0,Math.round(n));save();const after=rankOf(S.xp).r;if(after[1]!==before)setTimeout(()=>toast("Rang-Up! Du bist jetzt "+after[1]+" "+after[2]),400)}
+function setBest(key,val,low){const b=S.best[key];if(b==null||(low?val<b:val>b)){S.best[key]=val;save();return true}return false}
+function bestTxt(key,suf,pre){const b=S.best[key];return b==null?"Noch nicht gespielt":(pre||"Best: ")+b+(suf||"")}
+let V={n:"home"},timers=[];
+function clearT(){timers.forEach(t=>{clearInterval(t);clearTimeout(t)});timers=[]}
+function go(v){clearT();V=v;render();$("#main").scrollTop=0}
+
+/* ===== Ansichten ===== */
+function render(){
+ $("#btnBack").style.display=V.n==="home"?"none":"inline-block";
+ const m=$("#main");
+ const f={home:homeView,quiz:quizView,tf:tfView,who:whoView,fin:finView,mem:memView,res:resView,gu:guView,wo:woView}[V.n];
+ m.innerHTML=f();
+}
+function homeView(){
+ const {r,n}=rankOf(S.xp);
+ const pct=n?Math.round((S.xp-r[0])/(n[0]-r[0])*100):100;
+ let h='<div class="card rank"><div class="re">'+r[2]+'</div><div class="rt"><b>'+r[1]+'</b><small>'+S.xp+' XP'+(n?' · noch '+(n[0]-S.xp)+' bis '+n[1]:' · höchster Rang!')+'</small><div class="bar"><i style="width:'+pct+'%"></i></div></div></div>';
+ h+='<h2>🧩 Tagesrätsel</h2>'+puzRow("gu","🧠","Wrestler-Rätsel","Errate den Wrestler in 8 Versuchen")+puzRow("wo","🔤","Wrestling-Wordle","Errate das 5-Buchstaben-Wort");
+ h+='<h2>🎯 Quiz (10 Fragen)</h2><div class="grid">';
+ for(const k in CATS)h+='<button class="tile" data-a="quiz" data-k="'+k+'"><span class="te">'+CATS[k].e+'</span><b>'+CATS[k].n+'</b><small>'+bestTxt("quiz_"+k,"/10")+'</small></button>';
+ h+='<button class="tile mix" data-a="quiz" data-k="mix"><span class="te">🎲</span><b>Mix aus allem</b><small>'+bestTxt("quiz_mix","/10")+'</small></button></div>';
+ h+='<h2>🕹️ Spiele</h2>';
+ h+=gameRow("tf","⚡","Wahr oder Falsch","60 Sekunden Blitzrunde",bestTxt("tf"," richtig"));
+ h+=gameRow("who","🕵️","Wer ist das?","Errate den Wrestler an Hinweisen",bestTxt("who"," Punkte","Best: "));
+ h+=gameRow("fin","🤝","Finisher-Match","Ordne Wrestler und Finisher zu",S.best.fin==null?"Noch nicht gespielt":"Best: "+S.best.fin+" s");
+ h+=gameRow("mem","🃏","Memory","Finde alle Paare",S.best.mem==null?"Noch nicht gespielt":"Best: "+S.best.mem+" Züge");
+ return h;
+}
+function gameRow(a,e,t,d,b){return '<button class="game" data-a="'+a+'"><span class="ge">'+e+'</span><span class="gt"><b>'+t+'</b><small>'+d+'</small></span><span class="gb">'+b+'</span></button>'}
+
+/* --- Quiz --- */
+function startQuiz(k){
+ const pool=k==="mix"?[].concat(...Object.keys(Q).map(c=>Q[c].map(q=>Object.assign({c:c},q)))):Q[k].map(q=>Object.assign({c:k},q));
+ const qs=shuffle(pool).slice(0,10).map(q=>Object.assign({},q,{o:shuffle([q.a].concat(q.w))}));
+ go({n:"quiz",k:k,qs:qs,i:0,sc:0,pts:0,st:0,ans:null});
+}
+function quizView(){
+ const v=V,q=v.qs[v.i];
+ let h='<div class="top"><span>'+CATS[q.c].e+' Frage '+(v.i+1)+'/10</span><span>⭐ '+v.pts+(v.st>1?' · 🔥 '+v.st+'er-Serie':'')+'</span></div><div class="bar"><i style="width:'+(v.i/10*100)+'%"></i></div><div class="qbox">'+esc(q.q)+'</div>';
+ q.o.forEach((o,j)=>{let c="opt";if(v.ans!==null){if(o===q.a)c+=" ok";else if(j===v.ans)c+=" bad";else c+=" dim"}h+='<button class="'+c+'" data-a="pick" data-j="'+j+'"'+(v.ans!==null?" disabled":"")+'>'+esc(o)+'</button>'});
+ if(v.ans!==null){const good=q.o[v.ans]===q.a;h+='<div class="expl">'+(good?"✅ Richtig! ":"❌ Leider falsch. Richtig ist: <b>"+esc(q.a)+"</b>. ")+esc(q.x)+'</div><button class="btn" data-a="qnext">'+(v.i<9?"Weiter":"Ergebnis")+'</button>'}
+ return h;
+}
+function quizPick(j){
+ const v=V;if(v.ans!==null)return;const q=v.qs[v.i];v.ans=j;
+ if(q.o[j]===q.a){v.sc++;v.st++;v.pts+=10+2*Math.min(v.st-1,5)}else v.st=0;
+ render();
+}
+function quizNext(){
+ const v=V;
+ if(v.i<9){v.i++;v.ans=null;render();$("#main").scrollTop=0;return}
+ addXp(v.pts);const nb=setBest("quiz_"+v.k,v.sc);
+ const t=v.sc>=9?["🏆","Legendär!"]:v.sc>=7?["🔥","Stark!"]:v.sc>=5?["👍","Solide"]:["💪","Weiter üben!"];
+ go({n:"res",e:t[0],t:t[1],big:v.sc+" / 10",lines:["+"+v.pts+" XP"+(nb?" · neuer Bestwert!":"")],again:function(){startQuiz(v.k)},aLabel:"Nochmal spielen"});
+}
+
+/* --- Wahr oder Falsch --- */
+function newTF(){
+ const c=pick(Object.keys(Q)),q=pick(Q[c]),real=Math.random()<.5;
+ return {c:c,q:q.q,shown:real?q.a:pick(q.w),real:real,a:q.a};
+}
+function nextTF(){V.cur=newTF()}
+function startTF(){
+ go({n:"tf",sc:0,miss:0,last:"",endAt:Date.now()+60000,cur:newTF()});
+ timers.push(setInterval(function(){
+  const left=Math.max(0,Math.ceil((V.endAt-Date.now())/1000));
+  const el=$("#tm");if(el)el.textContent=left+" s";
+  if(left<=0)finishTF();
+ },200));
+}
+function tfView(){
+ const v=V,c=v.cur;
+ return '<div class="timer" id="tm">'+Math.max(0,Math.ceil((v.endAt-Date.now())/1000))+' s</div><div class="top"><span>✅ '+v.sc+' richtig</span><span>❌ '+v.miss+' falsch</span></div>'+
+ '<div class="tfq">'+CATS[c.c].e+' '+esc(c.q)+'</div><div class="tfa">'+esc(c.shown)+'</div>'+
+ '<div class="two"><button class="yes" data-a="tfa" data-v="1">✔ Stimmt</button><button class="no" data-a="tfa" data-v="0">✘ Stimmt nicht</button></div>'+
+ '<div class="last">'+v.last+'</div>';
+}
+function tfAnswer(val){
+ if(V.n!=="tf"||V.over)return;
+ const c=V.cur,good=(val==="1")===c.real;
+ if(good){V.sc++;V.last="✅ Richtig!"}else{V.miss++;V.last="❌ Falsch. Richtig: <b>"+esc(c.a)+"</b>"}
+ nextTF();render();
+}
+function finishTF(){
+ if(V.n!=="tf"||V.over)return;V.over=true;
+ const sc=V.sc,miss=V.miss;clearT();
+ const xp=Math.max(0,sc*5-miss*2);addXp(xp);const nb=setBest("tf",sc);
+ go({n:"res",e:"⚡",t:"Zeit ist um!",big:sc+" richtig",lines:[miss+" falsch","+"+xp+" XP"+(nb?" · neuer Bestwert!":"")],again:startTF,aLabel:"Nochmal spielen"});
+}
+
+/* --- Wer ist das? --- */
+function startWho(){
+ const rs=shuffle(WHO).slice(0,10).map(function(w){return {n:w.n,h:w.h,o:shuffle([w.n].concat(shuffle(WHO.filter(function(x){return x.n!==w.n})).slice(0,3).map(function(x){return x.n})))}});
+ go({n:"who",rs:rs,i:0,h:0,pts:0,ok:0,ans:null});
+}
+function whoView(){
+ const v=V,r=v.rs[v.i];
+ let h='<div class="top"><span>🕵️ Runde '+(v.i+1)+'/10</span><span>⭐ '+v.pts+' Punkte</span></div><div class="bar"><i style="width:'+(v.i/10*100)+'%"></i></div><div class="qbox" style="min-height:0">Wer ist das?</div>';
+ for(let k=0;k<=v.h;k++)h+='<div class="hint">💡 '+esc(r.h[k])+'</div>';
+ if(v.ans===null&&v.h<2)h+='<button class="btn sec" data-a="whint">Nächster Hinweis (weniger Punkte)</button>';
+ h+='<div style="height:6px"></div>';
+ r.o.forEach(function(o,j){let c="opt";if(v.ans!==null){if(o===r.n)c+=" ok";else if(j===v.ans)c+=" bad";else c+=" dim"}h+='<button class="'+c+'" data-a="wpick" data-j="'+j+'"'+(v.ans!==null?" disabled":"")+'>'+esc(o)+'</button>'});
+ if(v.ans!==null){const good=r.o[v.ans]===r.n;h+='<div class="expl">'+(good?"✅ Richtig! +"+(3-v.h)+" Punkte":"❌ Es war <b>"+esc(r.n)+"</b>.")+'</div><button class="btn" data-a="wnext">'+(v.i<9?"Weiter":"Ergebnis")+'</button>'}
+ return h;
+}
+function whoPick(j){
+ const v=V;if(v.ans!==null)return;const r=v.rs[v.i];v.ans=j;
+ if(r.o[j]===r.n){v.pts+=3-v.h;v.ok++}
+ render();
+}
+function whoNext(){
+ const v=V;
+ if(v.i<9){v.i++;v.h=0;v.ans=null;render();$("#main").scrollTop=0;return}
+ const xp=v.pts*4;addXp(xp);const nb=setBest("who",v.pts);
+ go({n:"res",e:"🕵️",t:v.ok>=8?"Echter Experte!":v.ok>=5?"Gut erkannt!":"Noch üben!",big:v.pts+" Punkte",lines:[v.ok+" von 10 erkannt","+"+xp+" XP"+(nb?" · neuer Bestwert!":"")],again:startWho,aLabel:"Nochmal spielen"});
+}
+
+/* --- Finisher-Match --- */
+function startFin(){
+ const ps=shuffle(FIN).slice(0,5);
+ go({n:"fin",ps:ps,L:shuffle([0,1,2,3,4]),R:shuffle([0,1,2,3,4]),done:[],sel:null,miss:0,t0:Date.now(),msg:"Tippe einen Wrestler und dann seinen Finisher."});
+}
+function finView(){
+ const v=V;
+ let h='<div class="top"><span>🤝 '+v.done.length+'/5 gefunden</span><span>❌ '+v.miss+' Fehler</span></div><div class="bar"><i style="width:'+(v.done.length/5*100)+'%"></i></div><div class="last" style="margin:12px 0">'+v.msg+'</div><div class="cols"><div>';
+ v.L.forEach(function(i){let c="";if(v.done.indexOf(i)>=0)c="done";else if(v.sel&&v.sel.s==="L"&&v.sel.i===i)c="sel";h+='<button class="'+c+'" data-a="fin" data-s="L" data-i="'+i+'">'+esc(v.ps[i][0])+'</button>'});
+ h+='</div><div>';
+ v.R.forEach(function(i){let c="";if(v.done.indexOf(i)>=0)c="done";else if(v.sel&&v.sel.s==="R"&&v.sel.i===i)c="sel";h+='<button class="'+c+'" data-a="fin" data-s="R" data-i="'+i+'">'+esc(v.ps[i][1])+'</button>'});
+ return h+'</div></div>';
+}
+function finTap(s,i){
+ const v=V;if(v.done.indexOf(i)>=0)return;
+ if(!v.sel||v.sel.s===s){v.sel={s:s,i:i};render();return}
+ const ok=v.sel.i===i;v.sel=null;
+ if(ok){v.done.push(i);v.msg="✅ Passt!"}else{v.miss++;v.msg="❌ Das passt nicht."}
+ if(v.done.length===5){
+  const sec=Math.round((Date.now()-v.t0)/1000),xp=Math.max(10,50-v.miss*5),score=sec+v.miss*5;
+  addXp(xp);const nb=setBest("fin",score,true);
+  go({n:"res",e:"🤝",t:v.miss===0?"Perfekt!":"Geschafft!",big:sec+" Sekunden",lines:[v.miss+" Fehler (je +5 s)","+"+xp+" XP"+(nb?" · neuer Bestwert!":"")],again:startFin,aLabel:"Nochmal spielen"});
+  return;
+ }
+ render();
+}
+
+/* --- Memory --- */
+function startMem(){
+ const em=shuffle(EM).slice(0,8);
+ const cards=shuffle(em.concat(em)).map(function(e){return {e:e,f:false,m:false}});
+ go({n:"mem",cards:cards,a:null,b:null,mv:0,lock:false});
+}
+function memView(){
+ const v=V;
+ let h='<div class="top"><span>🃏 Züge: '+v.mv+'</span><span>Paare: '+v.cards.filter(function(c){return c.m}).length/2+'/8</span></div><div class="mem">';
+ v.cards.forEach(function(c,i){h+='<button class="'+(c.m?"m":c.f?"f":"")+'" data-a="flip" data-i="'+i+'">'+(c.f||c.m?c.e:"❔")+'</button>'});
+ return h+'</div>';
+}
+function memFlip(i){
+ const v=V,c=v.cards[i];if(v.lock||c.f||c.m)return;
+ c.f=true;
+ if(v.a===null){v.a=i;render();return}
+ v.b=i;v.mv++;v.lock=true;
+ const A=v.cards[v.a],B=v.cards[v.b];
+ if(A.e===B.e){
+  A.m=B.m=true;v.a=v.b=null;v.lock=false;
+  if(v.cards.every(function(x){return x.m})){
+   const xp=Math.max(10,60-v.mv*2);addXp(xp);const nb=setBest("mem",v.mv,true);
+   go({n:"res",e:"🃏",t:"Alle Paare gefunden!",big:v.mv+" Züge",lines:["+"+xp+" XP"+(nb?" · neuer Bestwert!":"")],again:startMem,aLabel:"Nochmal spielen"});
+   return;
+  }
+  render();
+ }else{
+  render();
+  timers.push(setTimeout(function(){A.f=false;B.f=false;v.a=v.b=null;v.lock=false;if(V===v)render()},800));
+ }
+}
+
+/* --- Ergebnis --- */
+function resView(){
+ const v=V;
+ return '<div class="res"><div class="big">'+v.e+'</div><h3>'+esc(v.t)+'</h3><div class="pts">'+esc(v.big)+'</div>'+v.lines.map(function(l){return '<p>'+esc(l)+'</p>'}).join("")+'</div><button class="btn" data-a="again">'+v.aLabel+'</button><button class="btn sec" data-a="home">Zurück zum Menü</button>';
+}
+
+/* ===== Tagesrätsel: gemeinsame Helfer ===== */
+function pad2(n){return (n<10?"0":"")+n}
+function dstr(d){return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())}
+function today(){return dstr(new Date())}
+function yesterday(){const d=new Date();d.setDate(d.getDate()-1);return dstr(d)}
+function dayNum(){const d=new Date();return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000)}
+function seededPerm(n,seed){const a=[];for(let i=0;i<n;i++)a.push(i);let s=seed>>>0;function r(){s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}for(let i=n-1;i>0;i--){const j=Math.floor(r()*(i+1));const x=a[i];a[i]=a[j];a[j]=x}return a}
+function dayState(k){const t=today();let d=S.daily[k];if(!d||d.d!==t){d={d:t,done:false,won:false,g:[]};S.daily[k]=d}return d}
+function puzRow(k,e,t,d){
+ const st=S.daily[k],t0=today(),str=S.streak[k];
+ let b="Heute offen";
+ if(st&&st.d===t0&&st.done)b=st.won?"✅ Heute geschafft":"❌ Heute verpasst";
+ if(str&&str.n>0&&(str.l===t0||str.l===yesterday()))b+="<br>🔥 "+str.n+" Tage";
+ return '<button class="game" data-a="'+k+'"><span class="ge">'+e+'</span><span class="gt"><b>'+t+'</b><small>'+d+'</small></span><span class="gb">'+b+'</span></button>';
+}
+function updStreak(k,won){
+ const t=today(),st=S.streak[k]||{n:0,l:""};
+ if(won)st.n=(st.l===yesterday()||st.l===t)?st.n+1:1;else st.n=0;
+ st.l=t;S.streak[k]=st;
+}
+function finishPuzzle(k,daily,won,tries,maxXp,step){
+ let xp=won?Math.max(15,maxXp-(tries-1)*step):5;
+ if(!daily)xp=Math.round(xp/2);
+ if(daily){const st=dayState(k);st.done=true;st.won=won;st.tries=tries;updStreak(k,won);}
+ addXp(xp);save();
+ return xp;
+}
+
+/* ===== Wrestler-Rätsel ===== */
+const G=[
+["The Undertaker","Undertaker","M","USA",1965,208],["Stone Cold Steve Austin","Austin","M","USA",1964,188],["The Rock","Rock","M","USA",1972,196],["John Cena","Cena","M","USA",1977,185],["Triple H","Triple H","M","USA",1969,193],["Brock Lesnar","Lesnar","M","USA",1977,191],["Randy Orton","Orton","M","USA",1980,196],["Rey Mysterio","Mysterio","M","USA",1974,168],["Shawn Michaels","Michaels","M","USA",1965,183],["Bret Hart","Hart","M","Kanada",1957,183],["Hulk Hogan","Hogan","M","USA",1953,201],["Kurt Angle","Angle","M","USA",1968,183],["Mick Foley","Foley","M","USA",1965,188],["Eddie Guerrero","Guerrero","M","USA",1967,173],["Edge","Edge","M","Kanada",1973,196],["Seth Rollins","Rollins","M","USA",1986,185],["Roman Reigns","Reigns","M","USA",1985,191],["Cody Rhodes","Rhodes","M","USA",1985,185],["Daniel Bryan","Bryan","M","USA",1981,178],["Big Show","Big Show","M","USA",1972,213],["Kane","Kane","M","USA",1967,213],["CM Punk","Punk","M","USA",1978,188],["Batista","Batista","M","USA",1969,198],["Randy Savage","Savage","M","USA",1952,188],["Ric Flair","Flair","M","USA",1949,185],["André the Giant","Andre","M","Frankreich",1946,223],["Drew McIntyre","McIntyre","M","Schottland",1985,196],["AJ Styles","Styles","M","USA",1977,180],["Sting","Sting","M","USA",1959,188],["Booker T","Booker T","M","USA",1965,191],["Jeff Hardy","Hardy","M","USA",1977,185],["Matt Hardy","Hardy","M","USA",1974,191],["Kevin Owens","Owens","M","Kanada",1984,183],["Sami Zayn","Zayn","M","Kanada",1984,185],["Finn Bálor","Balor","M","Irland",1981,180],["Sheamus","Sheamus","M","Irland",1978,193],["Kofi Kingston","Kingston","M","Ghana",1981,183],["Big E","Big E","M","USA",1986,180],["Gunther","Gunther","M","Österreich",1987,193],["Goldberg","Goldberg","M","USA",1966,193],["The Ultimate Warrior","Warrior","M","USA",1959,188],["Jey Uso","Uso","M","USA",1985,191],["Jimmy Uso","Uso","M","USA",1985,188],["The Miz","Miz","M","USA",1980,188],["Bray Wyatt","Wyatt","M","USA",1987,188],
+["Rhea Ripley","Ripley","W","Australien",1996,170],["Becky Lynch","Lynch","W","Irland",1987,168],["Charlotte Flair","Flair","W","USA",1986,178],["Bianca Belair","Belair","W","USA",1989,170],["Sasha Banks","Banks","W","USA",1992,165],["Bayley","Bayley","W","USA",1989,168],["Asuka","Asuka","W","Japan",1981,160],["Alexa Bliss","Bliss","W","USA",1991,155],["Liv Morgan","Morgan","W","USA",1994,157],["Natalya","Natalya","W","Kanada",1982,165],["Trish Stratus","Stratus","W","Kanada",1975,163],["Lita","Lita","W","USA",1975,168]
+];
+const GMAX=8;
+const PERM_G=seededPerm(G.length,20250101);
+function gLetter(i){return G[i][1].replace(/[^A-Za-z]/g,"").charAt(0).toUpperCase()}
+function norm(s){return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9 ]/g,"")}
+function gCmp(gi,si){
+ const g=G[gi],s=G[si],cells=[];
+ cells.push({t:g[2]==="M"?"Mann":"Frau",c:g[2]===s[2]?"g":"r",a:""});
+ cells.push({t:g[3],c:g[3]===s[3]?"g":"r",a:""});
+ let d=s[4]-g[4];cells.push({t:String(g[4]),c:d===0?"g":Math.abs(d)<=3?"y":"r",a:d===0?"":d>0?"▲":"▼"});
+ d=s[5]-g[5];cells.push({t:g[5]+" cm",c:Math.abs(d)<=2?"g":Math.abs(d)<=6?"y":"r",a:Math.abs(d)<=2?"":d>0?"▲":"▼"});
+ const a=gLetter(gi),b=gLetter(si);d=b.charCodeAt(0)-a.charCodeAt(0);
+ cells.push({t:a,c:d===0?"g":Math.abs(d)<=3?"y":"r",a:d===0?"":d>0?"▲":"▼"});
+ return cells;
+}
+function startGu(daily){
+ let secret,gs=[];
+ if(daily){const st=dayState("g");secret=PERM_G[dayNum()%G.length];gs=st.g.slice()}
+ else secret=Math.floor(Math.random()*G.length);
+ go({n:"gu",daily:daily,secret:secret,gs:gs,over:false,won:false,xp:0,q:""});
+ guCheck(true);
+}
+function guCheck(restore){
+ const v=V;
+ if(v.gs.indexOf(v.secret)>=0){v.over=true;v.won=true}
+ else if(v.gs.length>=GMAX){v.over=true;v.won=false}
+ if(v.over&&!restore){v.xp=finishPuzzle("g",v.daily,v.won,v.gs.length,60,6)}
+ else if(v.over&&restore&&v.daily){const st=dayState("g");if(!st.done){v.xp=finishPuzzle("g",true,v.won,v.gs.length,60,6)}}
+ render();
+}
+function guGuess(i){
+ const v=V;if(v.n!=="gu"||v.over||v.gs.indexOf(i)>=0)return;
+ v.gs.push(i);
+ if(v.daily){const st=dayState("g");st.g=v.gs.slice();save()}
+ v.q="";guCheck(false);
+ const inp=$("#gin");if(inp&&!v.over)inp.focus();
+}
+function guSug(){
+ const inp=$("#gin"),box=$("#sug");if(!inp||!box)return;
+ const q=norm(inp.value).trim();
+ if(!q){box.innerHTML="";return}
+ const r=[];
+ for(let i=0;i<G.length&&r.length<6;i++){if(V.gs.indexOf(i)>=0)continue;if(norm(G[i][0]).indexOf(q)>=0||norm(G[i][1]).indexOf(q)>=0)r.push(i)}
+ box.innerHTML=r.length?r.map(function(i){return '<button class="sg" data-a="gpick" data-i="'+i+'">'+esc(G[i][0])+'</button>'}).join(""):'<div class="last">Kein Wrestler gefunden.</div>';
+}
+function guView(){
+ const v=V;
+ let h='<div class="top"><span>🧠 '+(v.daily?"Tagesrätsel":"Freies Spiel")+'</span><span>Versuch '+Math.min(v.gs.length+(v.over?0:1),GMAX)+'/'+GMAX+'</span></div><div class="bar"><i style="width:'+(v.gs.length/GMAX*100)+'%"></i></div>';
+ if(!v.over){
+  h+='<div class="qbox" style="min-height:0;margin:14px 0 10px">Wer ist der gesuchte Wrestler?</div><input id="gin" class="gin" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Namen eintippen…"><div id="sug"></div>';
+ }
+ h+='<div class="legend">Grün = passt · Gelb = knapp daneben · Rot = falsch. ▲ gesucht ist höher, ▼ niedriger (Zahl oder Buchstabe).</div>';
+ h+='<div class="gh"><span>Name</span><span>Geschl.</span><span>Land</span><span>Jahrgang</span><span>Größe</span><span>Anfangs-buchst.</span></div>';
+ v.gs.slice().reverse().forEach(function(i){
+  h+='<div class="gr"><div class="gn">'+esc(G[i][0])+'</div>'+gCmp(i,v.secret).map(function(c){return '<div class="gc '+c.c+'">'+esc(c.t)+(c.a?'<i>'+c.a+'</i>':'')+'</div>'}).join("")+'</div>';
+ });
+ if(v.over){
+  h+='<div class="expl" style="margin-top:14px">'+(v.won?"🎉 Richtig! Gesucht war <b>"+esc(G[v.secret][0])+"</b>. Gelöst in "+v.gs.length+" Versuch"+(v.gs.length>1?"en":"")+".":"😬 Leider nicht geschafft. Gesucht war <b>"+esc(G[v.secret][0])+"</b>.")+(v.xp?" +"+v.xp+" XP":"")+'</div>'+
+  '<button class="btn" data-a="guf">🎲 Freies Spiel (neuer Wrestler)</button><button class="btn sec" data-a="gshare">📤 Ergebnis teilen</button>';
+ }
+ return h;
+}
+function guShareText(){
+ const v=V,m={g:"🟩",y:"🟨",r:"🟥"};
+ let t="QuizKumpel Wrestler-Rätsel "+(v.daily?today()+" ":"")+(v.won?v.gs.length:"X")+"/"+GMAX+"\n";
+ v.gs.forEach(function(i){t+=gCmp(i,v.secret).map(function(c){return m[c.c]}).join("")+"\n"});
+ return t.trim();
+}
+
+/* ===== Wrestling-Wordle ===== */
+const WW=["BRYAN","ANGLE","FLAIR","HARDY","STING","ORTON","OWENS","LYNCH","ASUKA","HOGAN","FOLEY","BALOR","WYATT","MANIA","TABLE","CHAIR","TITLE","MATCH","ROPES","CLASH","HEELS"];
+const PERM_W=seededPerm(WW.length,777);
+const WMAX=6;
+function evalWord(g,s){
+ const r=["x","x","x","x","x"],cnt={};
+ for(let i=0;i<5;i++){if(g[i]===s[i])r[i]="g";else cnt[s[i]]=(cnt[s[i]]||0)+1}
+ for(let i=0;i<5;i++){if(r[i]!=="g"&&cnt[g[i]]>0){r[i]="y";cnt[g[i]]--}}
+ return r;
+}
+function startWo(daily){
+ let secret,gs=[];
+ if(daily){const st=dayState("w");secret=WW[PERM_W[dayNum()%WW.length]];gs=st.g.slice()}
+ else secret=pick(WW);
+ go({n:"wo",daily:daily,secret:secret,gs:gs,cur:"",over:false,won:false,xp:0,msg:""});
+ woCheck(true);
+}
+function woCheck(restore){
+ const v=V;
+ if(v.gs.indexOf(v.secret)>=0){v.over=true;v.won=true}
+ else if(v.gs.length>=WMAX){v.over=true;v.won=false}
+ if(v.over&&!restore){v.xp=finishPuzzle("w",v.daily,v.won,v.gs.length,60,8)}
+ else if(v.over&&restore&&v.daily){const st=dayState("w");if(!st.done){v.xp=finishPuzzle("w",true,v.won,v.gs.length,60,8)}}
+ render();
+}
+function woKey(k){const v=V;if(v.n!=="wo"||v.over)return;if(v.cur.length<5){v.cur+=k;v.msg=""}render()}
+function woBack(){const v=V;if(v.n!=="wo"||v.over)return;v.cur=v.cur.slice(0,-1);render()}
+function woEnter(){
+ const v=V;if(v.n!=="wo"||v.over)return;
+ if(v.cur.length<5){v.msg="Bitte 5 Buchstaben eingeben.";render();return}
+ v.gs.push(v.cur);v.cur="";v.msg="";
+ if(v.daily){const st=dayState("w");st.g=v.gs.slice();save()}
+ woCheck(false);
+}
+function woView(){
+ const v=V;
+ let h='<div class="top"><span>🔤 '+(v.daily?"Tagesrätsel":"Freies Spiel")+'</span><span>Versuch '+Math.min(v.gs.length+(v.over?0:1),WMAX)+'/'+WMAX+'</span></div><div class="legend" style="margin-top:0">Gesucht: Nachname eines Wrestlers oder ein Wrestling-Begriff mit 5 Buchstaben.</div><div class="wg">';
+ const keys={};
+ for(let r=0;r<WMAX;r++){
+  let word=r<v.gs.length?v.gs[r]:(r===v.gs.length&&!v.over?v.cur:""),ev=r<v.gs.length?evalWord(v.gs[r],v.secret):null;
+  for(let c=0;c<5;c++){
+   const ch=word.charAt(c);let cls="wt";
+   if(ev){cls+=" "+ev[c];const o=keys[ch],n=ev[c];if(!o||(o==="x"&&n!=="x")||(o==="y"&&n==="g"))keys[ch]=n}
+   else if(ch)cls+=" f";
+   h+='<div class="'+cls+'">'+esc(ch)+'</div>';
+  }
+ }
+ h+='</div><div class="last">'+esc(v.msg)+'</div>';
+ if(!v.over){
+  const rows=["QWERTZUIOP","ASDFGHJKL","YXCVBNM"];
+  h+='<div class="kb">';
+  rows.forEach(function(row,ri){
+   h+='<div class="kr">';
+   if(ri===2)h+='<button class="k wide" data-a="wenter">OK</button>';
+   row.split("").forEach(function(ch){h+='<button class="k '+(keys[ch]||"")+'" data-a="wk" data-k="'+ch+'">'+ch+'</button>'});
+   if(ri===2)h+='<button class="k wide" data-a="wback">⌫</button>';
+   h+='</div>';
+  });
+  h+='</div>';
+ }else{
+  h+='<div class="expl" style="margin-top:14px">'+(v.won?"🎉 Richtig! Das Wort war <b>"+esc(v.secret)+"</b>. Gelöst in "+v.gs.length+" Versuch"+(v.gs.length>1?"en":"")+".":"😬 Leider nicht geschafft. Das Wort war <b>"+esc(v.secret)+"</b>.")+(v.xp?" +"+v.xp+" XP":"")+'</div>'+
+  '<button class="btn" data-a="wof">🎲 Freies Spiel (neues Wort)</button><button class="btn sec" data-a="wshare">📤 Ergebnis teilen</button>';
+ }
+ return h;
+}
+function woShareText(){
+ const v=V,m={g:"🟩",y:"🟨",x:"⬛"};
+ let t="QuizKumpel Wrestling-Wordle "+(v.daily?today()+" ":"")+(v.won?v.gs.length:"X")+"/"+WMAX+"\n";
+ v.gs.forEach(function(w){t+=evalWord(w,v.secret).map(function(c){return m[c]}).join("")+"\n"});
+ return t.trim();
+}
+async function shareTxt(t){
+ if(navigator.share){try{await navigator.share({text:t});return}catch(e){if(e&&e.name==="AbortError")return}}
+ try{await navigator.clipboard.writeText(t);toast("Ergebnis kopiert")}catch(e){toast("Teilen nicht möglich")}
+}
+
+/* ===== Events ===== */
+document.addEventListener("click",function(e){
+ const t=e.target.closest("[data-a]");if(!t)return;
+ const d=t.dataset,a=d.a;
+ switch(a){
+  case "home":go({n:"home"});break;
+  case "quiz":startQuiz(d.k);break;
+  case "pick":quizPick(+d.j);break;
+  case "qnext":quizNext();break;
+  case "tf":startTF();break;
+  case "tfa":tfAnswer(d.v);break;
+  case "who":startWho();break;
+  case "whint":if(V.n==="who"&&V.h<2){V.h++;render()}break;
+  case "wpick":whoPick(+d.j);break;
+  case "wnext":whoNext();break;
+  case "fin":if(V.n==="fin"&&d.s)finTap(d.s,+d.i);else startFin();break;
+  case "mem":startMem();break;
+  case "flip":memFlip(+d.i);break;
+  case "gu":startGu(true);break;
+  case "guf":startGu(false);break;
+  case "gpick":guGuess(+d.i);break;
+  case "gshare":shareTxt(guShareText());break;
+  case "wo":startWo(true);break;
+  case "wof":startWo(false);break;
+  case "wk":woKey(d.k);break;
+  case "wenter":woEnter();break;
+  case "wback":woBack();break;
+  case "wshare":shareTxt(woShareText());break;
+  case "again":if(V.again)V.again();break;
+  case "info":$("#shInfo").classList.add("open");break;
+  case "close":$("#shInfo").classList.remove("open");break;
+  case "reset":if(confirm("Wirklich den gesamten Fortschritt löschen?")){S=fresh();save();$("#shInfo").classList.remove("open");go({n:"home"});toast("Fortschritt zurückgesetzt")}break;
+ }
+});
+$("#shInfo").addEventListener("click",function(e){if(e.target===this)this.classList.remove("open")});
+document.addEventListener("input",function(e){if(e.target&&e.target.id==="gin")guSug()});
+document.addEventListener("keydown",function(e){
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ if(e.target&&e.target.id==="gin"){
+  if(e.key==="Enter"){
+   const q=norm(e.target.value).trim();if(!q)return;
+   let m=-1;
+   for(let i=0;i<G.length;i++){if(V.gs.indexOf(i)<0&&norm(G[i][0])===q){m=i;break}}
+   if(m<0){const b=document.querySelector("#sug .sg");if(b)m=+b.dataset.i}
+   if(m>=0){e.preventDefault();guGuess(m)}
+  }
+  return;
+ }
+ if(V.n==="wo"&&!V.over){
+  if(e.key==="Enter"){e.preventDefault();woEnter()}
+  else if(e.key==="Backspace"){e.preventDefault();woBack()}
+  else if(/^[a-zA-Z]$/.test(e.key)){woKey(e.key.toUpperCase())}
+ }
+});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});
+render();
+</script>
+</body>
+</html>
